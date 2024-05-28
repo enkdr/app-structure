@@ -1,16 +1,17 @@
 package application
 
 import (
-	"context"
-	"database/sql"
-	"fmt"
-	"html/template"
-	"log"
-	"net/http"
-	"os"
-	"time"
-
-	_ "github.com/lib/pq" // Import PostgreSQL driver
+		"context"
+		"database/sql"
+		"fmt"
+		"html/template"
+		"log"
+		"net/http"
+		"os"
+		"time"
+		_ "github.com/lib/pq" 
+		"app-structure/database"
+		
 )
 
 var db *sql.DB
@@ -23,18 +24,23 @@ type App struct {
 
 func New() *App {
 
-	connStr := fmt.Sprintf("host=%s user=%s dbname=%s password=%s sslmode=disable",
-		os.Getenv("DB_HOST"), os.Getenv("DB_USER"), os.Getenv("DB_NAME"), os.Getenv("DB_PASSWORD"))
+	// connStr := fmt.Sprintf("host=%s user=%s dbname=%s password=%s sslmode=disable",
+	// 	os.Getenv("DB_HOST"), os.Getenv("DB_USER"), os.Getenv("DB_NAME"), os.Getenv("DB_PASSWORD"))
 
-	var err error
+	// var err error
 
-	db, err = sql.Open("postgres", connStr)
-	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
-	} else {
-		fmt.Println("postgres connected")
-	}
-
+	// db, err = sql.Open("postgres", connStr)
+	// if err != nil {
+	// 	log.Fatalf("Failed to connect to database: %v", err)
+	// } else {
+	// 	fmt.Println("postgres connected")
+	// }		
+		
+		db, err := database.InitDB()
+		if err != nil {
+        log.Fatalf("failed to initialize database: %v", err)
+    }
+		
 	// Determine the base path for the templates directory
 	var templatesPath string
 	if os.Getenv("DOCKER_ENV") == "true" {
