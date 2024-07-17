@@ -1,58 +1,46 @@
 package application
 
 import (
-		"context"
-		"database/sql"
-		"fmt"
-		"html/template"
-		"log"
-		"net/http"
-		"os"
-		"time"
-		_ "github.com/lib/pq" 
-		"app-structure/database"
-		
+	"app-structure/database"
+	"context"
+	"database/sql"
+	"fmt"
+	"html/template"
+	"log"
+	"net/http"
+	"os"
+	"time"
+
+	_ "github.com/lib/pq"
 )
 
 var db *sql.DB
 
 type App struct {
-	router    http.Handler
+	router    http.Handler // chi
 	templates *template.Template
 	db        *sql.DB
 }
 
-func New() *App {
+func NewApp() *App {
 
-	// connStr := fmt.Sprintf("host=%s user=%s dbname=%s password=%s sslmode=disable",
-	// 	os.Getenv("DB_HOST"), os.Getenv("DB_USER"), os.Getenv("DB_NAME"), os.Getenv("DB_PASSWORD"))
+	db, err := database.InitDB()
+	if err != nil {
+		log.Fatalf("failed to initialize database: %v", err)
+	}
 
-	// var err error
-
-	// db, err = sql.Open("postgres", connStr)
-	// if err != nil {
-	// 	log.Fatalf("Failed to connect to database: %v", err)
-	// } else {
-	// 	fmt.Println("postgres connected")
-	// }		
-		
-		db, err := database.InitDB()
-		if err != nil {
-        log.Fatalf("failed to initialize database: %v", err)
-    }
-		
-	// Determine the base path for the templates directory
 	var templatesPath string
 	if os.Getenv("DOCKER_ENV") == "true" {
-		templatesPath = "templates/index.html" // Update with the correct path in your Docker container
+		templatesPath = "templates/index.html"
 	} else {
-		templatesPath = "../templates/index.html" // Update with the correct relative path in your local environment
+		templatesPath = "../templates/index.html"
 	}
 
 	app := &App{
 		templates: template.Must(template.ParseFiles(templatesPath)),
 		db:        db,
 	}
+
 	app.loadRoutes()
 
 	return app
@@ -74,7 +62,7 @@ func (a *App) Start(ctx context.Context) error {
 	go func() {
 		err := server.ListenAndServe()
 		if err != nil {
-			ch <- fmt.Errorf("::: failed to start server: %w :::", err)
+			ch <- fmt.Errorf("failed to start server: %w", err)
 		}
 		close(ch)
 	}()
@@ -88,5 +76,4 @@ func (a *App) Start(ctx context.Context) error {
 		return server.Shutdown(timeout)
 	}
 
-	return nil
 }

@@ -1,15 +1,15 @@
 package main
 
 import (
+	"app-structure/application"
 	"context"
 	"fmt"
-	"app-structure/application"
 	"os"
 	"os/signal"
 )
 
 func main() {
-	app := application.New()
+	app := application.NewApp()
 
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, os.Kill)
 	defer cancel()
